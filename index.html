@@ -5,16 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sphere Hero</title>
     <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.min.js" defer></script>
+    <script src="script.js" defer></script>
   </head>
   <body>
     <section id="sphere-hero" aria-label="3D сфера">
       <div class="sphere-hero__container">
         <div class="sphere-hero__canvas" id="sphere-canvas"></div>
-        <div class="sphere-hero__fallback" id="sphere-fallback" role="status">
-          WebGL недоступен
-        </div>
+        <div class="sphere-hero__fallback" id="sphere-fallback" role="status">WebGL недоступен</div>
       </div>
     </section>
-    <script type="module" src="script.js"></script>
   </body>
 </html>

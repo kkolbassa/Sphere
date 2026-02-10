@@ -1,115 +1,154 @@
-import * as THREE from "https://unpkg.com/three@0.161.0/build/three.module.js";
+(() => {
+  const hero = document.getElementById("sphere-hero");
+  const canvasHost = document.getElementById("sphere-canvas");
+  const fallback = document.getElementById("sphere-fallback");
 
-const hero = document.getElementById("sphere-hero");
-const canvasHost = document.getElementById("sphere-canvas");
-const fallback = document.getElementById("sphere-fallback");
+  if (!hero || !canvasHost || !fallback) return;
 
-const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-const hasWebGL = () => {
-  try {
-    const canvas = document.createElement("canvas");
-    return !!(
-      window.WebGLRenderingContext &&
-      (canvas.getContext("webgl") || canvas.getContext("experimental-webgl"))
-    );
-  } catch (error) {
-    return false;
+  const showFallback = () => {
+    hero.classList.add("is-fallback");
+    fallback.hidden = false;
+  };
+
+  const hasWebGL = () => {
+    try {
+      const canvas = document.createElement("canvas");
+      return !!(
+        window.WebGLRenderingContext &&
+        (canvas.getContext("webgl") || canvas.getContext("experimental-webgl"))
+      );
+    } catch (_error) {
+      return false;
+    }
+  };
+
+  if (!window.THREE || !hasWebGL()) {
+    showFallback();
+    return;
   }
-};
 
-if (!hasWebGL()) {
-  hero.classList.add("is-fallback");
-  fallback.hidden = false;
-} else {
   fallback.hidden = true;
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
-  camera.position.set(0, 0, 6);
+  camera.position.set(0, 0, 6.5);
 
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setClearColor(0xffffff, 1);
   canvasHost.appendChild(renderer.domElement);
 
-  const group = new THREE.Group();
-  scene.add(group);
-
-  const geometry = new THREE.SphereGeometry(2, 48, 32);
-  const material = new THREE.MeshBasicMaterial({
+  const sphereGeometry = new THREE.SphereGeometry(2, 64, 48);
+  const wireGeometry = new THREE.WireframeGeometry(sphereGeometry);
+  const wireMaterial = new THREE.LineBasicMaterial({
     color: 0x206090,
-    wireframe: true,
-    wireframeLinewidth: 1,
     transparent: true,
-    opacity: 0.9,
+    opacity: 0.95,
   });
-  const sphere = new THREE.Mesh(geometry, material);
-  group.add(sphere);
+  const wireSphere = new THREE.LineSegments(wireGeometry, wireMaterial);
+  scene.add(wireSphere);
 
   let isDragging = false;
   let startX = 0;
   let velocity = 0;
   let targetYaw = 0;
   let currentYaw = 0;
-  let autoRotate = true;
+  let autoRotate = !prefersReducedMotion.matches;
   let autoRotateTimeout = null;
 
-  const reduceMotionSettings = () => {
-    return {
-      damping: prefersReducedMotion.matches ? 0.08 : 0.12,
-      inertia: prefersReducedMotion.matches ? 0.85 : 0.92,
-      autoSpeed: prefersReducedMotion.matches ? 0 : 0.002,
-    };
-  };
+  const getMotionConfig = () => ({
+    damping: prefersReducedMotion.matches ? 0.1 : 0.14,
+    inertia: prefersReducedMotion.matches ? 0.78 : 0.9,
+    autoSpeed: prefersReducedMotion.matches ? 0 : 0.0018,
+    sensitivity: 0.005,
+  });
 
   const updateSize = () => {
-    const { width, height } = canvasHost.getBoundingClientRect();
+    const rect = canvasHost.getBoundingClientRect();
+    const width = Math.max(1, Math.floor(rect.width));
+    const height = Math.max(1, Math.floor(rect.height));
     renderer.setSize(width, height, false);
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
   };
 
-  const handlePointerDown = (event) => {
+  const startInteraction = (x) => {
     isDragging = true;
-    startX = event.clientX;
-    canvasHost.setPointerCapture(event.pointerId);
+    startX = x;
     autoRotate = false;
     if (autoRotateTimeout) {
-      window.clearTimeout(autoRotateTimeout);
+      clearTimeout(autoRotateTimeout);
+      autoRotateTimeout = null;
     }
   };
 
-  const handlePointerMove = (event) => {
+  const moveInteraction = (x) => {
     if (!isDragging) return;
-    const deltaX = event.clientX - startX;
-    startX = event.clientX;
-    const sensitivity = 0.005;
+    const { sensitivity } = getMotionConfig();
+    const deltaX = x - startX;
+    startX = x;
     velocity = deltaX * sensitivity;
     targetYaw += velocity;
   };
 
-  const handlePointerUp = (event) => {
+  const endInteraction = () => {
+    if (!isDragging) return;
     isDragging = false;
-    canvasHost.releasePointerCapture(event.pointerId);
-    autoRotateTimeout = window.setTimeout(() => {
-      autoRotate = true;
+    autoRotateTimeout = setTimeout(() => {
+      autoRotate = !prefersReducedMotion.matches;
     }, 2000);
   };
 
-  canvasHost.addEventListener("pointerdown", handlePointerDown);
-  canvasHost.addEventListener("pointermove", handlePointerMove);
-  canvasHost.addEventListener("pointerup", handlePointerUp);
-  canvasHost.addEventListener("pointerleave", handlePointerUp);
-  canvasHost.addEventListener("pointercancel", handlePointerUp);
-
-  prefersReducedMotion.addEventListener("change", () => {
-    if (prefersReducedMotion.matches) {
-      autoRotate = false;
-    }
+  canvasHost.addEventListener("pointerdown", (event) => {
+    canvasHost.setPointerCapture(event.pointerId);
+    startInteraction(event.clientX);
   });
 
+  canvasHost.addEventListener("pointermove", (event) => {
+    moveInteraction(event.clientX);
+  });
+
+  ["pointerup", "pointercancel", "pointerleave"].forEach((eventName) => {
+    canvasHost.addEventListener(eventName, (event) => {
+      if (event.pointerId !== undefined && canvasHost.hasPointerCapture(event.pointerId)) {
+        canvasHost.releasePointerCapture(event.pointerId);
+      }
+      endInteraction();
+    });
+  });
+
+  canvasHost.addEventListener(
+    "touchstart",
+    (event) => {
+      if (!event.touches[0]) return;
+      startInteraction(event.touches[0].clientX);
+    },
+    { passive: true }
+  );
+
+  canvasHost.addEventListener(
+    "touchmove",
+    (event) => {
+      if (!event.touches[0]) return;
+      moveInteraction(event.touches[0].clientX);
+    },
+    { passive: true }
+  );
+
+  canvasHost.addEventListener("touchend", endInteraction, { passive: true });
+  canvasHost.addEventListener("touchcancel", endInteraction, { passive: true });
+
+  if (typeof prefersReducedMotion.addEventListener === "function") {
+    prefersReducedMotion.addEventListener("change", () => {
+      autoRotate = !prefersReducedMotion.matches;
+      if (prefersReducedMotion.matches) velocity *= 0.5;
+    });
+  }
+
   const animate = () => {
-    const { damping, inertia, autoSpeed } = reduceMotionSettings();
+    const { damping, inertia, autoSpeed } = getMotionConfig();
 
     if (autoRotate) {
       targetYaw += autoSpeed;
@@ -119,7 +158,9 @@ if (!hasWebGL()) {
     targetYaw += velocity;
     velocity *= inertia;
 
-    group.rotation.y = currentYaw;
+    wireSphere.rotation.x = 0;
+    wireSphere.rotation.y = currentYaw;
+    wireSphere.rotation.z = 0;
 
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
@@ -128,4 +169,4 @@ if (!hasWebGL()) {
   updateSize();
   window.addEventListener("resize", updateSize);
   animate();
-}
+})();

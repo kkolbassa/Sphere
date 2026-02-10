@@ -19,6 +19,7 @@
 #sphere-hero .sphere-hero__canvas {
   width: 100%;
   height: 100%;
+  touch-action: none;
 }
 
 #sphere-hero canvas {
