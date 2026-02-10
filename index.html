@@ -3,52 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Metrosphere 3D Globe</title>
+    <title>Sphere Hero</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <main class="stage">
-      <div class="globe" id="globe" aria-label="3D сфера">
-        <svg
-          class="globe__svg"
-          viewBox="0 0 400 400"
-          role="img"
-          aria-hidden="true"
-        >
-          <defs>
-            <radialGradient id="sphereGradient" cx="32%" cy="28%" r="75%">
-              <stop offset="0%" stop-color="#f7f9fb" />
-              <stop offset="50%" stop-color="#c8cdd4" />
-              <stop offset="100%" stop-color="#8f97a1" />
-            </radialGradient>
-            <radialGradient id="shadowGradient" cx="70%" cy="55%" r="60%">
-              <stop offset="0%" stop-color="rgba(0,0,0,0)" />
-              <stop offset="55%" stop-color="rgba(0,0,0,0.1)" />
-              <stop offset="100%" stop-color="rgba(0,0,0,0.28)" />
-            </radialGradient>
-            <radialGradient id="shine" cx="28%" cy="25%" r="40%">
-              <stop offset="0%" stop-color="rgba(255,255,255,0.9)" />
-              <stop offset="70%" stop-color="rgba(255,255,255,0)" />
-            </radialGradient>
-            <mask id="sphereMask">
-              <rect width="400" height="400" fill="black" />
-              <circle cx="200" cy="200" r="160" fill="white" />
-            </mask>
-          </defs>
-          <circle class="sphere" cx="200" cy="200" r="160" />
-          <circle class="shadow" cx="200" cy="200" r="160" />
-          <circle class="shine" cx="200" cy="200" r="140" />
-          <g class="grid" mask="url(#sphereMask)">
-            <ellipse cx="200" cy="200" rx="140" ry="52" />
-            <ellipse cx="200" cy="200" rx="140" ry="95" />
-            <ellipse cx="200" cy="200" rx="140" ry="135" />
-            <ellipse cx="200" cy="200" rx="95" ry="160" />
-            <ellipse cx="200" cy="200" rx="55" ry="160" />
-          </g>
-        </svg>
+    <section id="sphere-hero" aria-label="3D сфера">
+      <div class="sphere-hero__container">
+        <div class="sphere-hero__canvas" id="sphere-canvas"></div>
+        <div class="sphere-hero__fallback" id="sphere-fallback" role="status">
+          WebGL недоступен
+        </div>
       </div>
-      <p class="hint">Тяните мышью или пальцем влево-вправо, чтобы вращать сферу по горизонтали.</p>
-    </main>
-    <script src="script.js"></script>
+    </section>
+    <script type="module" src="script.js"></script>
   </body>
 </html>
