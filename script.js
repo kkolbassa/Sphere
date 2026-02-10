@@ -12,19 +12,7 @@
     fallback.hidden = false;
   };
 
-  const hasWebGL = () => {
-    try {
-      const canvas = document.createElement("canvas");
-      return !!(
-        window.WebGLRenderingContext &&
-        (canvas.getContext("webgl") || canvas.getContext("experimental-webgl"))
-      );
-    } catch (_error) {
-      return false;
-    }
-  };
-
-  if (!window.THREE || !hasWebGL()) {
+  if (!window.THREE) {
     showFallback();
     return;
   }
@@ -35,7 +23,13 @@
   const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
   camera.position.set(0, 0, 6.5);
 
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+  let renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+  } catch (_error) {
+    showFallback();
+    return;
+  }
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.setClearColor(0xffffff, 1);
   canvasHost.appendChild(renderer.domElement);
