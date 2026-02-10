@@ -1,22 +1,41 @@
-(() => {
-  const hero = document.getElementById("sphere-hero");
-  const canvasHost = document.getElementById("sphere-canvas");
-  const fallback = document.getElementById("sphere-fallback");
+const hero = document.getElementById("sphere-hero");
+const canvasHost = document.getElementById("sphere-canvas");
+const fallback = document.getElementById("sphere-fallback");
 
-  if (!hero || !canvasHost || !fallback) return;
+if (!hero || !canvasHost || !fallback) {
+  throw new Error("Sphere container not found");
+}
 
-  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-  const showFallback = () => {
-    hero.classList.add("is-fallback");
-    fallback.hidden = false;
-  };
+const showFallback = () => {
+  hero.classList.add("is-fallback");
+  fallback.hidden = false;
+};
 
-  if (!window.THREE) {
-    showFallback();
-    return;
+const loadThree = async () => {
+  const sources = [
+    "https://unpkg.com/three@0.161.0/build/three.module.js",
+    "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js",
+    "https://esm.sh/three@0.161.0",
+  ];
+
+  for (const source of sources) {
+    try {
+      const mod = await import(source);
+      if (mod?.WebGLRenderer) return mod;
+    } catch (_error) {
+      // try next CDN
+    }
   }
 
+  return null;
+};
+
+const THREE = await loadThree();
+if (!THREE) {
+  showFallback();
+} else {
   fallback.hidden = true;
 
   const scene = new THREE.Scene();
@@ -30,6 +49,7 @@
     showFallback();
     return;
   }
+
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.setClearColor(0xffffff, 1);
   canvasHost.appendChild(renderer.domElement);
@@ -163,4 +183,4 @@
   updateSize();
   window.addEventListener("resize", updateSize);
   animate();
-})();
+}
