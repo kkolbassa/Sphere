@@ -55,3 +55,11 @@
     width: min(92vw, 440px);
   }
 }
+
+#sphere-hero #sphere-hero-canvas canvas {
+  cursor: grab;
+}
+
+#sphere-hero #sphere-hero-canvas canvas:active {
+  cursor: grabbing;
+}
