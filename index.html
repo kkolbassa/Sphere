@@ -3,43 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MetroSphere 3D Globe</title>
+    <title>3D Sphere Fragment</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <main class="stage">
-      <div class="globe" id="globe" aria-label="3D сфера Метросферы">
-        <svg
-          class="globe__svg"
-          viewBox="0 0 400 400"
-          role="img"
-          aria-hidden="true"
-        >
-          <defs>
-            <linearGradient id="ringGradient" x1="0" x2="1" y1="0" y2="1">
-              <stop offset="0%" stop-color="#2b5f8f" />
-              <stop offset="100%" stop-color="#1a4f7f" />
-            </linearGradient>
-          </defs>
-          <circle class="outer-ring" cx="200" cy="200" r="170" />
-          <g class="grid">
-            <ellipse cx="200" cy="200" rx="120" ry="170" />
-            <ellipse cx="200" cy="200" rx="60" ry="170" />
-            <ellipse cx="200" cy="200" rx="120" ry="40" />
-            <ellipse cx="200" cy="200" rx="120" ry="90" />
-          </g>
-          <g class="dots">
-            <circle cx="278" cy="115" r="13" />
-            <circle cx="298" cy="150" r="13" />
-            <circle cx="312" cy="188" r="13" />
-            <circle cx="316" cy="228" r="13" />
-            <circle cx="312" cy="268" r="13" />
-            <circle cx="298" cy="308" r="13" />
-          </g>
-        </svg>
-      </div>
-      <p class="hint">Потяните мышью/пальцем вверх-вниз, чтобы вращать сферу по оси X.</p>
-    </main>
+    <section id="sphere-hero" aria-label="Интерактивная 3D-сфера">
+      <div id="sphere-hero-canvas" aria-hidden="true"></div>
+      <p id="sphere-hero-fallback" role="status" aria-live="polite">WebGL недоступен</p>
+    </section>
+
+    <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
     <script src="script.js"></script>
   </body>
 </html>
